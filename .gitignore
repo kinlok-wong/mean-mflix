@@ -155,3 +155,33 @@ vite.config.ts.timestamp-*
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Build outputs
+dist/
+**/dist/
+frontend/angular-app/dist/
+
+# Certificates and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+backend/.env
+backend/certs/
+backend/certs/atlas-client.pem
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
