@@ -10,6 +10,8 @@ import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import movieRoutes from './modules/movies/movie.routes';
 import { sendSuccess } from './utils/api-response';
+import swaggerUi from 'swagger-ui-express';
+import { openApiDocument } from './docs/openapi';
 
 const app = express();
 
@@ -52,6 +54,11 @@ app.get('/api/health/ready', (_req, res) => {
 });
 
 app.use('/api/v1/movies', movieRoutes);
+
+app.use('/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(openApiDocument)
+);
 
 // Handle unknown routes
 app.use(notFoundMiddleware);
