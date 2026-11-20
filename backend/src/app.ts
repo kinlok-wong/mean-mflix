@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import { env } from './config/env';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
+import movieRoutes from './modules/movies/movie.routes';
 
 const app = express();
 
@@ -51,6 +52,8 @@ app.get('/api/health/ready', (_req, res) => {
     database: isDatabaseConnected ? 'connected' : 'disconnected',
   });
 });
+
+app.use('/api/v1/movies', movieRoutes);
 
 // Handle unknown routes
 app.use(notFoundMiddleware);

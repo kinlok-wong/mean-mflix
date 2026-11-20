@@ -16,3 +16,18 @@ export function validateBody<T extends z.ZodType>(
     next();
   };
 }
+
+export function validateQuery<T extends z.ZodType>(
+  schema: T
+): RequestHandler {
+  return (req, res, next) => {
+    const result = schema.safeParse(req.query);
+
+    if (!result.success) {
+      return next(result.error);
+    }
+
+    res.locals.movieQuery = result.data;
+    next();
+  };
+}
