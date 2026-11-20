@@ -2,10 +2,14 @@
 import mongoose from 'mongoose';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
+import { env } from './env';
 
 export async function connectDatabase(): Promise<void> {
-  const uri = process.env.MONGODB_URI;
-  const certificatePath = process.env.MONGODB_X509_CERT_PATH;
+  const uri = env.MONGODB_URI;
+  const certificatePath = path.resolve(
+    process.cwd(),
+    env.MONGODB_X509_CERT_PATH
+  );
 
   if (!uri) {
     throw new Error('MONGODB_URI is not configured');
@@ -29,7 +33,7 @@ export async function connectDatabase(): Promise<void> {
   }
 
   const certificatePassword =
-    process.env.MONGODB_X509_CERT_PASSWORD;
+    env.MONGODB_X509_CERT_PASSWORD;
 
   try {
     await mongoose.connect(uri, {
