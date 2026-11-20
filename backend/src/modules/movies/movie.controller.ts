@@ -1,13 +1,11 @@
-
-import type {
-  Request,
-  Response,
-  NextFunction,
-} from 'express';
-
+import type { Request, Response, NextFunction } from 'express';
 import { movieService } from './movie.service';
 import type { MovieQuery } from './movie.schema';
 import { AppError } from '../../utils/app-error';
+import {
+  sendSuccess,
+  sendPaginated,
+} from '../../utils/api-response';
 
 export class MovieController {
   getMovies = async (
@@ -20,11 +18,7 @@ export class MovieController {
         res.locals.movieQuery as MovieQuery
       );
 
-      res.status(200).json({
-        success: true,
-        data: result.movies,
-        pagination: result.pagination,
-      });
+      sendPaginated(res, result.movies, result.pagination);
     } catch (error) {
       next(error);
     }
@@ -44,10 +38,7 @@ export class MovieController {
 
       const movie = await movieService.getMovieById(movieId);
 
-      res.status(200).json({
-        success: true,
-        data: movie,
-      });
+      sendSuccess(res, movie);
     } catch (error) {
       next(error);
     }
@@ -61,10 +52,7 @@ export class MovieController {
     try {
       const genres = await movieService.getGenres();
 
-      res.status(200).json({
-        success: true,
-        data: genres,
-      });
+      sendSuccess(res, genres);
     } catch (error) {
       next(error);
     }

@@ -9,6 +9,7 @@ import { env } from './config/env';
 import { notFoundMiddleware } from './middleware/not-found.middleware';
 import { errorMiddleware } from './middleware/error.middleware';
 import movieRoutes from './modules/movies/movie.routes';
+import { sendSuccess } from './utils/api-response';
 
 const app = express();
 
@@ -34,12 +35,10 @@ app.use(pinoHttp());
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Movie Explorer API is running',
+  sendSuccess(res, {
     environment: env.NODE_ENV,
     timestamp: new Date().toISOString(),
-  });
+  }, 'Movie Explorer API is running');
 });
 
 // Database readiness
@@ -47,10 +46,9 @@ app.get('/api/health/ready', (_req, res) => {
   const isDatabaseConnected =
     mongoose.connection.readyState === 1;
 
-  res.status(isDatabaseConnected ? 200 : 503).json({
-    success: isDatabaseConnected,
+  sendSuccess(res, {
     database: isDatabaseConnected ? 'connected' : 'disconnected',
-  });
+  }, isDatabaseConnected ? 'Database is connected' : 'Database is disconnected');
 });
 
 app.use('/api/v1/movies', movieRoutes);
