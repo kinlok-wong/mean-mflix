@@ -3,11 +3,14 @@ import { Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 
 import { MovieModel, type Movie } from './movie.model';
+import type { SortOrder } from 'mongoose';
 
 export interface MovieFilters {
   search?: string;
   genre?: string;
   year?: number;
+  sortBy: 'year' | 'title' | 'rating' | 'released';
+  sortOrder: 'asc' | 'desc';
   page: number;
   limit: number;
 }
@@ -18,6 +21,8 @@ export class MovieRepository {
       search,
       genre,
       year,
+      sortBy,
+      sortOrder,
       page,
       limit,
     } = filters;
@@ -25,26 +30,49 @@ export class MovieRepository {
     const query: QueryFilter<Movie> = {};
 
     if (search) {
-      query.title = {
-        $regex: escapeRegex(search),
+      const safeSearch = escapeRegex(search);
+
+      query.$or = [
+        { title: { $regex: safeSearch, $options: 'i' } },
+        { plot: { $regex: safeSearch, $options: 'i' } },
+        { cast: { $regex: safeSearch, $options: 'i' } },
+        { directors: { $regex: safeSearch, $options: 'i' } },
+      ];
+    }
+
+    if (genre) {
+      query.genres = {
+        $regex: `^${escapeRegex(genre)}$`,
         $options: 'i',
       };
     }
 
-    if (genre) {
-      query.genres = genre;
-    }
-
-    if (year) {
+    if (year !== undefined) {
       query.year = year;
     }
+
+    const sortFieldMap = {
+      year: 'year',
+      title: 'title',
+      rating: 'imdb.rating',
+      released: 'released',
+    } as const;
+
+    const sortDirection = sortOrder === 'asc' ? 1 : -1;
+
+    const sort: Record<string, SortOrder> = {
+      [sortFieldMap[sortBy]]: sortDirection,
+      _id: 1,
+    };
 
     const skip = (page - 1) * limit;
 
     const [movies, total] = await Promise.all([
       MovieModel.find(query)
-        .select('title year genres runtime poster plot imdb')
-        .sort({ year: -1, title: 1 })
+        .select(
+          'title year genres runtime poster plot imdb released'
+        )
+        .sort(sort)
         .skip(skip)
         .limit(limit)
         .lean(),
@@ -55,9 +83,9 @@ export class MovieRepository {
     return {
       movies,
       pagination: {
-        total,
         page,
         limit,
+        total,
         totalPages: Math.ceil(total / limit),
       },
     };
@@ -81,6 +109,36 @@ export class MovieRepository {
         typeof genre === 'string'
       )
       .sort((a, b) => a.localeCompare(b));
+  }
+
+  async findDetailsById(id: string): Promise<Movie | null> {
+    return MovieModel.findById(id)
+      .select(
+        'title year genres runtime cast directors plot fullplot poster released imdb countries languages rated awards type'
+      )
+      .lean<Movie>()
+      .exec();
+  }
+
+  async findRelatedMovies(
+    movieId: Types.ObjectId,
+    genres: string[],
+    limit = 10
+  ): Promise<Movie[]> {
+    return MovieModel.find({
+      _id: { $ne: movieId },
+      genres: { $in: genres },
+    })
+      .select(
+        'title year genres runtime poster plot imdb'
+      )
+      .sort({
+        'imdb.rating': -1,
+        year: -1,
+      })
+      .limit(limit)
+      .lean<Movie[]>()
+      .exec();
   }
 }
 

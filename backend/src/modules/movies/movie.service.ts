@@ -21,6 +21,8 @@ export class MovieService {
       search: query.search,
       genre: query.genre,
       year: query.year,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
       page: query.page,
       limit: query.limit,
     };
@@ -44,6 +46,44 @@ export class MovieService {
 
   async getGenres() {
     return movieRepository.findGenres();
+  }
+
+  async getMovieDetails(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new AppError('Invalid movie ID', 400);
+    }
+
+    const movie = await movieRepository.findDetailsById(id);
+
+    if (!movie) {
+      throw new AppError('Movie not found', 404);
+    }
+
+    return movie;
+  }
+
+  async getRelatedMovies(id: string) {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new AppError('Invalid movie ID', 400);
+    }
+
+    const movie = await movieRepository.findDetailsById(id);
+
+    if (!movie) {
+      throw new AppError('Movie not found', 404);
+    }
+
+    const genres = movie.genres ?? [];
+
+    if (genres.length === 0) {
+      return [];
+    }
+
+    return movieRepository.findRelatedMovies(
+      movie._id,
+      genres,
+      10
+    );
   }
 }
 

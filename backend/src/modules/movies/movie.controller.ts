@@ -57,6 +57,46 @@ export class MovieController {
       next(error);
     }
   };
+
+  getMovieDetails = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const movieId = req.params.id;
+
+      if (typeof movieId !== 'string') {
+        return next(new AppError('Invalid movie ID', 400));
+      }
+
+      const movie = await movieService.getMovieDetails(movieId);
+
+      sendSuccess(res, movie);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getRelatedMovies = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const movieId = req.params.id;
+
+      if (typeof movieId !== 'string') {
+        return next(new AppError('Invalid movie ID', 400));
+      }
+
+      const movies = await movieService.getRelatedMovies(movieId);
+
+      sendSuccess(res, movies);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export const movieController = new MovieController();

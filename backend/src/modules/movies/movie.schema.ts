@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 export const movieQuerySchema = z.object({
@@ -7,6 +6,18 @@ export const movieQuerySchema = z.object({
   genre: z.string().trim().min(1).max(50).optional(),
 
   year: z.coerce.number().int().min(1888).max(2100).optional(),
+
+  sortBy: z.enum([
+    'year',
+    'title',
+    'rating',
+    'released',
+  ]).default('year'),
+
+  sortOrder: z.enum([
+    'asc',
+    'desc',
+  ]).default('desc'),
 
   page: z.coerce.number().int().min(1).default(1),
 
