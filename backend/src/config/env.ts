@@ -17,10 +17,7 @@ const envSchema = z.object({
 
   MONGODB_X509_CERT_PASSWORD: z.string().optional(),
 
-  FRONTEND_ORIGIN: z
-    .string()
-    .url('FRONTEND_ORIGIN must be a valid URL')
-    .default('http://localhost:4200'),
+  FRONTEND_ORIGINS: z.string().min(1).default('http://localhost:4200'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

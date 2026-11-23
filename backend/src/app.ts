@@ -12,6 +12,7 @@ import movieRoutes from './modules/movies/movie.routes';
 import { sendSuccess } from './utils/api-response';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './docs/openapi';
+import { apiRateLimiter } from './middleware/rate-limit.middleware';
 
 const app = express();
 
@@ -19,21 +20,36 @@ const app = express();
 app.disable('x-powered-by');
 app.use(helmet());
 
+const allowedOrigins = env.FRONTEND_ORIGINS
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 // CORS
 app.use(
   cors({
-    origin: env.FRONTEND_ORIGIN,
+    origin: (origin, callback) => {
+      // Allow requests without Origin (e.g. server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      // Reject untrusted origins
+      callback(null, false);
+    },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
   })
 );
+
+// HTTP request logging
+app.use(pinoHttp());
 
 // Request parsing
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
-
-// HTTP request logging
-app.use(pinoHttp());
 
 // Health check
 app.get('/api/health', (_req, res) => {
@@ -52,6 +68,9 @@ app.get('/api/health/ready', (_req, res) => {
     database: isDatabaseConnected ? 'connected' : 'disconnected',
   }, isDatabaseConnected ? 'Database is connected' : 'Database is disconnected');
 });
+
+// Apply rate limiting to versioned API routes
+app.use('/api/v1', apiRateLimiter);
 
 app.use('/api/v1/movies', movieRoutes);
 
