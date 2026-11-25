@@ -6,13 +6,13 @@ import pinoHttp from 'pino-http';
 import mongoose from 'mongoose';
 
 import { env } from './config/env';
-import { notFoundMiddleware } from './middleware/not-found.middleware';
-import { errorMiddleware } from './middleware/error.middleware';
-import movieRoutes from './modules/movies/movie.routes';
+import { notFoundMiddleware } from './middlewares/not-found.middleware';
+import { errorMiddleware } from './middlewares/error.middleware';
+import apiV1Routes from './routes/api-v1.routes';
 import { sendSuccess } from './utils/api-response';
 import swaggerUi from 'swagger-ui-express';
 import { openApiDocument } from './docs/openapi';
-import { apiRateLimiter } from './middleware/rate-limit.middleware';
+import { apiRateLimiter } from './middlewares/rate-limit.middleware';
 
 const app = express();
 
@@ -72,7 +72,8 @@ app.get('/api/health/ready', (_req, res) => {
 // Apply rate limiting to versioned API routes
 app.use('/api/v1', apiRateLimiter);
 
-app.use('/api/v1/movies', movieRoutes);
+app.use('/api/v1', apiRateLimiter);
+app.use('/api/v1', apiV1Routes);
 
 app.use('/api-docs',
   swaggerUi.serve,

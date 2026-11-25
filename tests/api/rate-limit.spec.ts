@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import type { Server } from 'node:http';
-import { createApiRateLimiter } from '../../backend/src/middleware/rate-limit.middleware';
+import { createApiRateLimiter } from '../../backend/src/middlewares/rate-limit.middleware';
 
 const backendRequire = createRequire(
   resolve(process.cwd(), 'backend/package.json'),

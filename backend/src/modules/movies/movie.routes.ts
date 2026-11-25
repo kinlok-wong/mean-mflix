@@ -3,7 +3,7 @@ import { Router } from 'express';
 
 import { movieController } from './movie.controller';
 import { movieQuerySchema } from './movie.schema';
-import { validateQuery } from '../../middleware/validate.middleware';
+import { validateQuery } from '../../middlewares/validate.middleware';
 
 const router = Router();
 
